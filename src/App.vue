@@ -8,11 +8,11 @@
         <div v-if="!todos.length" class="item" style="justify-content: center">
           <p>You don't have any task</p>
         </div>
-        <div class="item" v-for="todo in todos" :key="todo['.key']">
+        <div class="item" v-for="todo in reverseTodos" :key="todo['.key']">
           <div class="select">
             <label
               class="checkbox"
-              :for="todo['.key']"
+              @click="completed(todo['.key'])"
               :class="{ active: todo.completed }"
             ></label>
             <input type="checkbox" :id="todo['.key']" v-model="todo.completed" />
@@ -106,6 +106,7 @@ export default {
             todoCollection.push({
               completed: false,
               content: this.newTask,
+              create_at: Date.now(),
             });
             topRightAlert.fire({
               icon: "success",
@@ -114,6 +115,21 @@ export default {
             this.newTask = null;
           }
         });
+    },
+    completed(id) {
+      let index = this.todos.findIndex((x) => x[".key"] === id);
+      let result = !this.todos[index].completed;
+
+      db.ref("todos/" + id)
+        .update({ completed: result })
+        .then(() => {
+          console.log("updated!");
+        });
+    },
+  },
+  computed: {
+    reverseTodos() {
+      return this.todos.slice().reverse();
     },
   },
 };
@@ -132,6 +148,7 @@ body {
   font-size: 1.1rem;
 }
 article {
+  margin: 50px 0;
   max-width: 100vw;
   min-width: 400px;
 }
